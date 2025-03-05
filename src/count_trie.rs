@@ -2,7 +2,6 @@
 use std::collections::HashMap;
 // External Crate Uses
 use ordered_hash_map::OrderedHashMap;
-use thiserror;
 // Local Uses
 
 /// A Trie structure which includes additional information of number
@@ -46,7 +45,7 @@ impl CountTrie {
     }
 
     /// Get Counts of next characters
-    pub fn get_next_counts(
+    pub(crate) fn get_next_counts(
         &self,
         prefix: &str,
     ) -> Result<OrderedHashMap<char, u32>, CountTrieError> {
@@ -82,7 +81,8 @@ impl CountTrie {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub(crate) enum CountTrieError {
+/// Errors associated with CountTrie
+enum CountTrieError {
     /// Occurs when the prefix is too long for the trie
     #[error("Prefix exceeds trie depth: {0}")]
     PrefixTooLong(String),
@@ -116,5 +116,18 @@ mod test_counttrie {
         assert_eq!(t_node.get_count(), 1);
         let r_node = a_node.children.get(&'r').unwrap();
         assert_eq!(r_node.get_count(), 1);
+    }
+
+    #[test]
+    fn test_counts() {
+        // Create a test CountTrie
+        let mut test_trie = CountTrie::new('^');
+        // Insert some words into the trie
+        test_trie.insert("cat$");
+        test_trie.insert("car$");
+        // Check next counts for ca
+        let ncounts = test_trie.get_next_counts("ca").unwrap();
+        assert_eq!(ncounts.get(&'t').unwrap().clone(), 1u32);
+        assert_eq!(ncounts.get(&'r').unwrap().clone(), 1u32);
     }
 }
