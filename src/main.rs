@@ -1,8 +1,3 @@
-// Modules
-mod config;
-mod count_trie;
-mod generator;
-mod sampling;
 // Includes
 // Standard Library
 use std::fs::{self, File};
@@ -11,8 +6,8 @@ use std::path::PathBuf;
 // External Crates
 use clap::Parser;
 // Local Includes
-use count_trie::CountTrie;
-use generator::MarkovGenerator;
+use marcharvgen::count_trie::CountTrie;
+use marcharvgen::generator::MarkovGenerator;
 
 // Clap CLI
 #[derive(Parser)]

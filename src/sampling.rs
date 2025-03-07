@@ -25,11 +25,39 @@ pub(crate) fn sample_map<K: Clone>(map: OrderedHashMap<K, u32>) -> Result<K, any
     let cutoff: f64 = rand::rng().sample(StandardUniform);
 
     // Iter through the map, checking if val/total>cutoff
+    let mut cum_sum = 0f64;
     for (key, val) in map.iter() {
-        if (*val as f64) / sum > cutoff {
+        cum_sum += *val as f64 / sum;
+        if cum_sum > cutoff {
             return Ok(key.clone());
         }
     }
     // If the above doesn't return, last entry is the one that should be returned
     Ok(map.iter().last().unwrap().0.clone())
+}
+
+#[cfg(test)]
+mod test_sampler {
+    use std::collections::HashMap;
+
+    use super::*;
+
+    #[test]
+    fn test_sample_map() {
+        let mut map: OrderedHashMap<char, u32> = OrderedHashMap::new();
+        map.insert('a', 2);
+        map.insert('b', 1);
+        map.insert('c', 1);
+        map.insert('d', 1);
+        let mut out_map: HashMap<char, u32> = HashMap::new();
+        for _ in 0..1000{
+            let sampled_char = sample_map(map.clone()).unwrap();
+            let count = out_map.entry(sampled_char).or_insert(0);
+            *count += 1;
+        }
+        // a should be the most frequently sampled
+        assert!(out_map.get(&'a').unwrap() > out_map.get(&'b').unwrap());
+        assert!(out_map.get(&'a').unwrap() > out_map.get(&'c').unwrap());
+        assert!(out_map.get(&'a').unwrap() > out_map.get(&'d').unwrap());
+    }
 }

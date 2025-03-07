@@ -3,7 +3,7 @@ use std::collections::HashMap;
 // External Crate Uses
 use ordered_hash_map::OrderedHashMap;
 // Local Uses
-use crate::config::{ENDCHAR, STARTCHAR};
+use crate::config::STARTCHAR;
 
 /// A Trie structure which includes additional information of number
 /// of inserted character sequences which pass through a particular node.
@@ -133,6 +133,11 @@ mod test_counttrie {
         assert_eq!(t_node.get_count(), 1);
         let r_node = a_node.children.get(&'r').unwrap();
         assert_eq!(r_node.get_count(), 1);
+        // Check that the r and t node both have '$' as a child
+        let t_end_node = t_node.children.get(&'$').unwrap();
+        let r_end_node = r_node.children.get(&'$').unwrap();
+        assert_eq!(t_end_node.get_count(), 1);
+        assert_eq!(r_end_node.get_count(), 1);
     }
 
     #[test]

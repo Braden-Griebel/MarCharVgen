@@ -3,8 +3,8 @@ use std::{fs::File, io::BufRead, io::BufReader, path::Path};
 // External Create Uses
 
 // Local Uses
-use crate::CountTrie;
 use crate::config::{ENDCHAR, STARTCHAR};
+use crate::count_trie::CountTrie;
 use crate::sampling::sample_map;
 
 /// Markov text generator
@@ -13,8 +13,6 @@ pub struct MarkovGenerator {
     depth: u32,
     /// Trie representing char frequency in corpus
     trie: CountTrie,
-    /// String of current word being generated
-    current_word: String,
 }
 
 impl MarkovGenerator {
@@ -24,7 +22,6 @@ impl MarkovGenerator {
         MarkovGenerator {
             depth,
             trie: CountTrie::new(STARTCHAR),
-            current_word: String::new(),
         }
     }
 
@@ -60,7 +57,7 @@ impl MarkovGenerator {
         let mut word_full = word.to_string();
         word_full.push(ENDCHAR);
         // If the word is shorter than the depth, insert the entire word
-        if (word.len() as u32) < self.depth {
+        if (word.len() as u32) <= self.depth {
             self.trie.insert(&word_full);
         }
         // Otherwise, iterate through all the windows in the word,
@@ -68,7 +65,7 @@ impl MarkovGenerator {
         word_full
             .chars()
             .collect::<Vec<char>>()
-            .windows(self.depth as usize)
+            .windows((self.depth+1) as usize)
             .for_each(|w| {
                 self.trie.insert(&w.iter().collect::<String>());
             });
@@ -79,12 +76,13 @@ impl MarkovGenerator {
         // Create string to hold the word being generated
         let mut new_word = String::new();
         new_word.push(STARTCHAR);
+        // Get the depth as a usize here, 
+        let d = self.depth as usize;
         // Loop until the last character is ENDCHAR
         while !new_word.ends_with(ENDCHAR) {
-            // Until the the new_word is longer than depth, pass in
+            // Until new_word is longer than depth, pass in
             // whole prefix
             // Subtract one for the STARTCHAR
-            let d = self.depth as usize;
             if new_word.len() - 1 <= d {
                 // Get counts for next letter
                 let counts = match self.trie.get_next_counts(&new_word) {
@@ -113,5 +111,35 @@ impl MarkovGenerator {
             }
         }
         Ok(new_word)
+    }
+}
+
+#[cfg(test)]
+mod generator_tests{
+    use super::*;
+
+    #[test]
+    fn test_word_generation()->Result<(), anyhow::Error>{
+        // Create a new generator
+        let mut generator = MarkovGenerator::new(3);
+        // Insert some words
+        generator.insert_word("cat");
+        generator.insert_word("dog");
+        generator.insert_word("pizza");
+        generator.insert_word("car");
+        generator.insert_word("tiger");
+        generator.insert_word("elephant");
+        generator.insert_word("capybara");
+        generator.insert_word("people");
+        generator.insert_word("gorilla");
+        // Generate a new word
+        let new_word = generator.generate()?;
+        // Check first and last characters are as expected 
+        assert!(new_word.starts_with(STARTCHAR));
+        assert!(new_word.ends_with(ENDCHAR));
+        // The length of the word should be at least 4 characters 
+        // (2 for ^ and $, and at least 2 generated)
+        assert!(new_word.len() >= 4);
+        Ok(())
     }
 }
