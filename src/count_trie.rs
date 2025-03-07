@@ -3,6 +3,7 @@ use std::collections::HashMap;
 // External Crate Uses
 use ordered_hash_map::OrderedHashMap;
 // Local Uses
+use crate::config::{ENDCHAR, STARTCHAR};
 
 /// A Trie structure which includes additional information of number
 /// of inserted character sequences which pass through a particular node.
@@ -35,6 +36,13 @@ impl CountTrie {
         if insert_str.len() == 0 {
             return;
         }
+        // If this is the root node (char==STARTCHAR), and the first char
+        // is the STARTCHAR, strip it off, otherwise use below dir
+        if self.node_char == STARTCHAR && insert_str.starts_with(STARTCHAR) {
+            let mut insert_chars = insert_str.chars();
+            insert_chars.next();
+            self.insert(insert_chars.as_str());
+        }
         // Create a new child if needed
         let new_child = self
             .children
@@ -53,6 +61,15 @@ impl CountTrie {
         if prefix.is_empty() {
             return Ok(self.get_child_counts());
         }
+        // If this node is the root (node_char==STARTCHAR), and the
+        // prefix starts with STARTCHAR, the first character should
+        // be stripped off
+        if self.node_char == STARTCHAR && prefix.starts_with(STARTCHAR) {
+            let mut prefix_chars = prefix.chars();
+            prefix_chars.next();
+            return self.get_next_counts(prefix_chars.as_str());
+        }
+
         // If the children map is empty, the prefix is too long for this trie
         if self.children.is_empty() {
             return Err(CountTrieError::PrefixTooLong(prefix.to_string()));
@@ -82,7 +99,7 @@ impl CountTrie {
 
 #[derive(Debug, thiserror::Error)]
 /// Errors associated with CountTrie
-enum CountTrieError {
+pub(crate) enum CountTrieError {
     /// Occurs when the prefix is too long for the trie
     #[error("Prefix exceeds trie depth: {0}")]
     PrefixTooLong(String),

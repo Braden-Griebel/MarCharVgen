@@ -7,7 +7,7 @@ use rand::prelude::*;
 // Local Uses
 
 /// Function to sample from OrderedHashMap keys weighted by values
-fn sample_map<K: Clone>(map: OrderedHashMap<K, u32>) -> Result<K, anyhow::Error> {
+pub(crate) fn sample_map<K: Clone>(map: OrderedHashMap<K, u32>) -> Result<K, anyhow::Error> {
     // If the map is empty, return error
     if map.is_empty() {
         return Err(anyhow::anyhow!("Can't sample from empty map"));
