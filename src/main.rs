@@ -1,12 +1,11 @@
 // Includes
 // Standard Library
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, LineWriter, Read, Write};
 use std::path::PathBuf;
 // External Crates
 use clap::Parser;
 // Local Includes
-use marcharvgen::count_trie::CountTrie;
 use marcharvgen::generator::MarkovGenerator;
 
 // Clap CLI

@@ -2,6 +2,11 @@
 name = "marcharvgen"
 version = "0.1.0"
 edition = "2024"
+authors = ["Braden Griebel <bgriebel@uw.edu>"]
+description = "A Markov word generator"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/Braden-Griebel/MarCharVgen"
 
 [dependencies]
 anyhow = "1.0.97"
